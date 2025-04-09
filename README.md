@@ -36,4 +36,66 @@ Not all available scraped data was used for the MCDA in the end. Still, it is pr
 |Fiat 500 1.2 8V Anniversario|13900|2012|93000|1242|69|
 |Kia Picanto|36900|2018|56213|998|67|
 |Audi A3|22500|2000|374000|1798|160|
-...
+
+## 2. UTA Method Implementation and Results
+
+### 2.1 Implementation Overview
+
+For our car selection problem, we implemented the UTA method to analyze the multiple criteria involved. Our implementation includes:
+
+- Using PuLP with the GLPK solver to formulate and solve the linear programming problem
+- Developing a mechanism to handle inconsistent preference information
+- Adding constraints to prevent any criterion from having a weight greater than 0.5
+- Creating artificial alternatives that vary only on pairs of criteria to ensure balanced weights
+
+### 2.2 Preference Structure
+
+We defined the following preference relations to guide our model:
+- Alternative_0 > Alternative_1 (Renault Clio > Renault Megane)
+- Alternative_1 > Alternative_2 (Renault Megane > Dacia Sandero)
+- Alternative_2 > Alternative_3 (Dacia Sandero > Mitsubishi Space Star)
+- Alternative_3 > Alternative_4 (Mitsubishi Space Star > Nissan Micra)
+- Alternative_4 > Alternative_5 (Nissan Micra > Ford KA)
+
+We also introduced an inconsistent preference:
+- Alternative_2 > Alternative_0 (Dacia Sandero > Renault Clio)
+
+This creates a cycle (Renault Clio > Renault Megane > Dacia Sandero > Renault Clio), which our solver had to find and fix.
+
+### 2.3 Results Analysis
+
+![Utility Functions](utility_functions.png)
+
+#### Criteria Weights
+Our model gave equal weight to all criteria:
+- price: 0.2000
+- year: 0.2000
+- mileage_km: 0.2000
+- engine_size_cm3: 0.2000
+- power_hp: 0.2000
+
+This happened because of our artificial alternatives that prevent any single criterion from becoming too important. Based on our preference statements, the model couldn't find a reason to make one criterion more important than others.
+
+#### Car Rankings
+Top 5 cars according to our model:
+1. Peugeot 208 PureTech 75 Allure (0.66)
+2. Mitsubishi Space Star 1.2 Clear Tec CVT Active+ (0.56)
+3. BMW Seria 1 118i (0.56)
+4. Peugeot 208 1.2 PureTech Style (0.48)
+5. Peugeot 208 1.2 PureTech Active (0.45)
+
+The scores range from 0.12 to 0.66, giving us a good way to tell the cars apart.
+
+### 2.4 Discussion
+
+1. **Finding Consistent Preferences**: Our solver found and removed the contradictory preference (Dacia Sandero > Renault Clio) to fix the cycle in our preference statements.
+
+2. **Equal Weights for All Criteria**: The artificial alternatives we created helped ensure that no single criterion dominated the decision. This gave us equal weights (0.2) for all five criteria.
+
+3. **Car Utility Patterns**: We found that some cars clearly perform better than others, but many cars have similar overall scores despite having different strengths in individual criteria.
+
+4. **Working Solution**: Our model successfully found a solution after removing the inconsistent preference, showing that our approach was reasonable.
+
+5. **Best Car Option**: The Peugeot 208 PureTech 75 Allure stands out as the clear winner with a utility score of 0.66, which is significantly higher than the other cars.
+
+The UTA method was effective in analyzing this complex car selection problem by handling the preference inconsistency and giving us a clear ranking of all alternatives.
