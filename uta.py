@@ -56,7 +56,7 @@ def add_weight_constraints(problem: LpProblem, criteria: Criteria, criteria_vari
         best_value = criterion.values[-int(criterion.is_gain)] # best is last in gain, first in cost
         problem += criterion_vars[best_value] <= 0.5, f"Weight_{criterion.name}_Max"
         problem += criterion_vars[best_value] >= threshold, f"Weight_{criterion.name}_Min"
-
+    
 def calculate_alternative_utilities(problem: LpProblem, dataset: pd.DataFrame, criteria: Criteria, criteria_variables: CriteriaVariables) -> Dict[str, LpVariable]:
     alternative_utilities = {}
     for index, row in dataset.iterrows():
@@ -72,26 +72,26 @@ def add_preference_constraints(problem: LpProblem, alternative_utilities: Dict[s
         problem += constraint, f"Pref_{pref.better}_{pref.worse}"
 
 def create_artificial_alternatives(problem: LpProblem, criteria: Criteria, criteria_variables: CriteriaVariables):
-    criteria_pairs = list(itertools.combinations(criteria, 2))
-    for i, (criterion1, criterion2) in enumerate(criteria_pairs):
-        best_value1 = criterion1.values[-int(criterion1.is_gain)]
-        worst_value1 = criterion1.values[int(criterion1.is_gain)-1]
-        best_value2 = criterion2.values[-int(criterion2.is_gain)]
-        worst_value2 = criterion2.values[int(criterion2.is_gain)-1]
-        
-        utility_var1 = LpVariable(f"Artificial_{i}_1_Utility", lowBound=0)
-        problem += utility_var1 == lpSum([
-            criteria_variables[criterion1.name][best_value1],
-            criteria_variables[criterion2.name][worst_value2]
-        ]), f"Utility_Artificial_{i}_1"
-        
-        utility_var2 = LpVariable(f"Artificial_{i}_2_Utility", lowBound=0)
-        problem += utility_var2 == lpSum([
-            criteria_variables[criterion1.name][worst_value1],
-            criteria_variables[criterion2.name][best_value2]
-        ]), f"Utility_Artificial_{i}_2"
-        
-        problem += utility_var1 != utility_var2, f"Avoid_Flat_{criterion1.name}_{criterion2.name}"
+    for i in range(len(criteria)):
+        for j in range(i+1, len(criteria)):
+            best_i = criteria[i].values[-int(criteria[i].is_gain)]
+            worst_i = criteria[i].values[int(criteria[i].is_gain)-1]
+            best_j = criteria[j].values[-int(criteria[j].is_gain)]
+            worst_j = criteria[j].values[int(criteria[j].is_gain)-1]
+            
+            alt1_utility = criteria_variables[criteria[i].name][best_i] + criteria_variables[criteria[j].name][worst_j]
+            alt2_utility = criteria_variables[criteria[i].name][worst_i] + criteria_variables[criteria[j].name][best_j]
+            
+            problem += alt1_utility - alt2_utility <= 0.95, f"ArtificialNotDictatorial_{criteria[i].name}_{criteria[j].name}_1"
+            problem += alt2_utility - alt1_utility <= 0.95, f"ArtificialNotDictatorial_{criteria[i].name}_{criteria[j].name}_2"
+            
+            mid_i = criteria[i].values[len(criteria[i].values) // 2]
+            problem += criteria_variables[criteria[i].name][mid_i] - criteria_variables[criteria[i].name][worst_i] >= 0.10, f"ArtificialNotFlat_{criteria[i].name}_{criteria[j].name}_1"
+            problem += criteria_variables[criteria[i].name][best_i] - criteria_variables[criteria[i].name][mid_i] >= 0.10, f"ArtificialNotFlat_{criteria[i].name}_{criteria[j].name}_2"
+            
+            mid_j = criteria[j].values[len(criteria[j].values) // 2]
+            problem += criteria_variables[criteria[j].name][mid_j] - criteria_variables[criteria[j].name][worst_j] >= 0.10, f"ArtificialNotFlat_{criteria[j].name}_{criteria[i].name}_1"
+            problem += criteria_variables[criteria[j].name][best_j] - criteria_variables[criteria[j].name][mid_j] >= 0.10, f"ArtificialNotFlat_{criteria[j].name}_{criteria[i].name}_2"
 
 def find_inconsistent_preferences(dataset: pd.DataFrame, criteria: Criteria, preferences: List[Preference]) -> Tuple[List[Preference], List[Preference]]:
     all_consistent_subsets = []
@@ -105,10 +105,7 @@ def find_inconsistent_preferences(dataset: pd.DataFrame, criteria: Criteria, pre
             add_weight_constraints(problem, criteria, criteria_variables)
             alternative_utilities = calculate_alternative_utilities(problem, dataset, criteria, criteria_variables)
             add_preference_constraints(problem, alternative_utilities, list(subset))
-            # try:
             create_artificial_alternatives(problem, criteria, criteria_variables)
-            # except:
-            #     pass
             problem += 0
             problem.solve(PULP_CBC_CMD(msg=0))
             if LpStatus[problem.status] == "Optimal":
@@ -130,10 +127,7 @@ def solve_uta_with_consistent_preferences(dataset: pd.DataFrame, criteria: Crite
     add_weight_constraints(problem, criteria, criteria_variables)
     alternative_utilities = calculate_alternative_utilities(problem, dataset, criteria, criteria_variables)
     add_preference_constraints(problem, alternative_utilities, consistent_preferences)
-    # try:
     create_artificial_alternatives(problem, criteria, criteria_variables)
-    # except:
-    #     pass
     problem += 0
     problem.solve(PULP_CBC_CMD(msg=0))
     return problem, criteria_variables, alternative_utilities
@@ -188,9 +182,9 @@ def main():
         Preference(better="Alternative_0", worse="Alternative_1"), # A > B
         Preference(better="Alternative_1", worse="Alternative_2"), # B > C
         Preference(better="Alternative_2", worse="Alternative_0"), # C > A (cycle)
+        Preference(better="Alternative_2", worse="Alternative_3"), # C > D
         Preference(better="Alternative_3", worse="Alternative_4"), # D > E
         Preference(better="Alternative_4", worse="Alternative_5"), # E > F
-        Preference(better="Alternative_0", worse="Alternative_3"), # A > D
     ]
     
     print("Preferences:")
