@@ -1,0 +1,15 @@
+[project]
+name = "da2project"
+version = "0.1.0"
+description = "DA Project 2"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Mateusz Idziejczak (155842)", email = "mateusz.idziejczak@student.put.poznan.pl" },
+    { name = "Mateusz Stawicki (155900)", email = "mateusz.stawicki@student.put.poznan.pl" }
+]
+dependencies = [
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.4",
+    "pulp>=3.1.1",
+]
