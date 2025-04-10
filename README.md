@@ -47,6 +47,7 @@ For our car selection problem, we implemented the UTA method to analyze the mult
 - Developing a mechanism to handle inconsistent preference information
 - Adding constraints to prevent any criterion from having a weight greater than 0.5
 - Creating artificial alternatives that vary only on pairs of criteria to ensure balanced weights
+- Implementing a discriminant value function that maximizes the distance between utilities of alternatives in preference relationships
 
 ### 2.2 Preference Structure
 
@@ -60,11 +61,31 @@ We defined the following preference relations to guide our model:
 We also introduced an inconsistent preference:
 - Alternative_2 > Alternative_0 (Dacia Sandero > Renault Clio)
 
-This creates a cycle (Renault Clio > Renault Megane > Dacia Sandero > Renault Clio), which our solver had to find and fix.
+This creates a cycle (Renault Clio > Renault Megane > Dacia Sandero > Renault Clio), which our solver had to find. And it found and removed the contradictory preference (Dacia Sandero > Renault Clio) to fix the cycle in our preference statements.
 
 ### 2.3 Results Analysis
 
 ![Utility Functions](utility_functions.png)
+
+#### Objective Function
+We implemented an objective function that maximizes the sum of utility differences between alternatives in preference relationships:
+
+```
+Maximize: Σ (U(a) - U(b)) for all preference relations a > b
+```
+
+This approach finds the most discriminant value function by ensuring that preferred alternatives have significantly higher utility values than less preferred ones. Our objective function successfully maximized the discrimination between alternatives in preference relationships:
+
+1. **Clear Utility Separation**: Looking at our consistent preference relations:
+   - Alternative_0 > Alternative_1: Utilities 0.79 > 0.70 (difference: 0.09)
+   - Alternative_1 > Alternative_2: Utilities 0.70 > 0.69 (difference: 0.01)
+   - Alternative_2 > Alternative_3: Utilities 0.69 > 0.50 (difference: 0.19)
+   - Alternative_3 > Alternative_4: Utilities 0.50 > 0.31 (difference: 0.19)
+   - Alternative_4 > Alternative_5: Utilities 0.31 > 0.30 (difference: 0.01)
+
+2. **Total Discrimination**: The sum of these differences (our objective function value) is 0.49, which represents how well our model discriminates between alternatives in preference relationships.
+
+3. **Distinct Utility Clusters**: The utility values show clear groupings (0.79, 0.70-0.69, 0.61-0.59, 0.50-0.49, 0.40-0.39, 0.31-0.30), indicating that the model separates alternatives into tiers.
 
 #### Criteria Weights
 Our model gave equal weight to all criteria:
@@ -74,28 +95,22 @@ Our model gave equal weight to all criteria:
 - engine_size_cm3: 0.2000
 - power_hp: 0.2000
 
-This happened because of our artificial alternatives that prevent any single criterion from becoming too important. Based on our preference statements, the model couldn't find a reason to make one criterion more important than others.
+This happened because of our artificial alternatives that prevent any single criterion from becoming too important. Based on our preference statements, the model couldn't find a reason to make one criterion more important than others. 
 
 #### Car Rankings
-Top 5 cars according to our model:
-1. Peugeot 208 PureTech 75 Allure (0.66)
-2. Mitsubishi Space Star 1.2 Clear Tec CVT Active+ (0.56)
-3. BMW Seria 1 118i (0.56)
-4. Peugeot 208 1.2 PureTech Style (0.48)
-5. Peugeot 208 1.2 PureTech Active (0.45)
+Our model successfully found a solution after removing the inconsistent preference, showing that our approach was reasonable. Both of the Renault Clio models stand out as the clear winners with a utility score of 0.79, which is significantly higher than the other cars.
+Top 10 cars according to our model:
+1. Renault Clio 0.9 Energy TCe Limited (0.79)
+2. Renault Clio (Energy) TCe 90 Start & Stop LIMITED (0.79)
+3. BMW Seria 1 118i (0.70)
+4. Renault Megane 1.4 RN 16V (0.70)
+5. Volkswagen Polo 1.2 TSI BMT Highline (0.69)
+6. Dacia Sandero Stepway TCe 90 (S&S) Essential (0.69)
+7. Audi A1 1.4 TFSI Sportback S tronic Ambition (0.69)
+8. Suzuki Swift 1.0 T Elegance (0.69)
+9. Opel Corsa (0.69)
+10. Mitsubishi Space Star 1.2 Clear Tec CVT Active+ (0.61)
 
-The scores range from 0.12 to 0.66, giving us a good way to tell the cars apart.
-
-### 2.4 Discussion
-
-1. **Finding Consistent Preferences**: Our solver found and removed the contradictory preference (Dacia Sandero > Renault Clio) to fix the cycle in our preference statements.
-
-2. **Equal Weights for All Criteria**: The artificial alternatives we created helped ensure that no single criterion dominated the decision. This gave us equal weights (0.2) for all five criteria.
-
-3. **Car Utility Patterns**: We found that some cars clearly perform better than others, but many cars have similar overall scores despite having different strengths in individual criteria.
-
-4. **Working Solution**: Our model successfully found a solution after removing the inconsistent preference, showing that our approach was reasonable.
-
-5. **Best Car Option**: The Peugeot 208 PureTech 75 Allure stands out as the clear winner with a utility score of 0.66, which is significantly higher than the other cars.
+The scores range from 0.30 to 0.79, giving us a good way to tell the cars apart.
 
 The UTA method was effective in analyzing this complex car selection problem by handling the preference inconsistency and giving us a clear ranking of all alternatives.

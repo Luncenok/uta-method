@@ -4,6 +4,7 @@ from pulp import PULP_CBC_CMD, LpProblem, LpVariable, LpMaximize, lpSum, value, 
 import itertools
 from typing import Dict, List, Tuple
 from dataclasses import dataclass
+import numpy as np
 
 @dataclass
 class Criterion:
@@ -128,14 +129,33 @@ def solve_uta_with_consistent_preferences(dataset: pd.DataFrame, criteria: Crite
     alternative_utilities = calculate_alternative_utilities(problem, dataset, criteria, criteria_variables)
     add_preference_constraints(problem, alternative_utilities, consistent_preferences)
     create_artificial_alternatives(problem, criteria, criteria_variables)
-    problem += 0
+    objective_terms = [alternative_utilities[pref.better] - alternative_utilities[pref.worse] for pref in consistent_preferences]
+    problem += lpSum(objective_terms), "Maximize_Utility_Differences"
     problem.solve(PULP_CBC_CMD(msg=0))
     return problem, criteria_variables, alternative_utilities
+
+def print_problem_details(problem: LpProblem, criteria_variables: CriteriaVariables, criteria: Criteria, alternative_utilities: Dict[str, LpVariable]):
+    print("\nObjective Function:")
+    print(f"   {problem.objective}")
+    print("\nAll Constraints:")
+    for name, constraint in problem.constraints.items():
+        print(f"   {name}: {constraint}")
+    print("\nAll Variables and Values:")
+    for variable in problem.variables():
+        print(f"   {variable.name} = {value(variable):.4f}")
+    print(f"\nObjective Value: {value(problem.objective):.4f}")
+    print("\nCriterion Weights (Maximum Utility Value):")
+    for criterion in criteria:
+        best_value = criterion.values[-int(criterion.is_gain)]
+        weight = value(criteria_variables[criterion.name][best_value])
+        print(f"   Weight of {criterion.name}: {weight:.4f}")
 
 # Plot utility functions
 def plot_utility_functions(criteria: Criteria, criteria_variables: CriteriaVariables):
     num_criteria = len(criteria)
     fig, axes = plt.subplots(1, num_criteria, figsize=(15, 5))
+    max_utility = np.max([value(criteria_variables[criterion.name][val]) for criterion in criteria for val in criterion.values])
+    
     for i, criterion in enumerate(criteria):
         criterion_vars = criteria_variables[criterion.name]
         utility_values = [value(criterion_vars[val]) for val in criterion.values]
@@ -146,9 +166,10 @@ def plot_utility_functions(criteria: Criteria, criteria_variables: CriteriaVaria
         ax.set_ylabel(f'u(g_{criterion.name})', usetex=False)
         # ax.xticks(criterion.values)
         # ax.set_xticks(criterion.values)
+        ax.set_ylim(0, max_utility * 1.1)
         ax.grid(True)
     plt.tight_layout()
-    plt.savefig('utility_functions.png')
+    plt.savefig('marginal_value_functions.png')
     plt.show()
 
 def calculate_rankings(dataset: pd.DataFrame, alternative_utilities: Dict[str, LpVariable]) -> pd.DataFrame:
@@ -208,15 +229,15 @@ def main():
     print(f"\nSolution status: {LpStatus[problem.status]}")
     
     if LpStatus[problem.status] == "Optimal":
+        objective_value = np.sum([value(alternative_utilities[pref.better]) - value(alternative_utilities[pref.worse]) for pref in preferences])
+        print(f"\nObjective function value: {objective_value:.4f}")
+        
+        print_problem_details(problem, criteria_variables, criteria, alternative_utilities)
+        
         plot_utility_functions(criteria, criteria_variables)
         rankings = calculate_rankings(dataset, alternative_utilities)
         print("\nAlternative Rankings:")
         print(rankings)
-        
-        print("\nCriterion Weights:")
-        for criterion in criteria:
-            weight = value(criteria_variables[criterion.name][criterion.values[-int(criterion.is_gain)]])
-            print(f"{criterion.name}: {weight:.4f}")
     else:
         print("Failed to find a solution with the consistent preferences.")
 
