@@ -200,17 +200,17 @@ def main():
                 Criterion(name="power_hp", is_gain=True, values=sorted(dataset["power_hp"].unique()))]
     
     preferences = [
-        Preference(better="Alternative_0", worse="Alternative_1"), # A > B
-        Preference(better="Alternative_1", worse="Alternative_2"), # B > C
-        Preference(better="Alternative_2", worse="Alternative_0"), # C > A (cycle)
-        Preference(better="Alternative_2", worse="Alternative_3"), # C > D
-        Preference(better="Alternative_3", worse="Alternative_4"), # D > E
-        Preference(better="Alternative_4", worse="Alternative_5"), # E > F
+        Preference(better="Alternative_8", worse="Alternative_9"), # kia picanto > audi a3
+        Preference(better="Alternative_7", worse="Alternative_9"), # fiat 500 > audi a3
+        Preference(better="Alternative_31", worse="Alternative_9"), # mitsubishi > audi a3
+        Preference(better="Alternative_31", worse="Alternative_8"), # mitsubishi > kia picanto
+        Preference(better="Alternative_31", worse="Alternative_7"), # mitsubishi > fiat 500
+        Preference(better="Alternative_9", worse="Alternative_31"), # audi a3 > mitsubishi (cycle)
     ]
     
     print("Preferences:")
     for pref in preferences:
-        if pref.better.endswith("2") and pref.worse.endswith("0"):
+        if pref.better.endswith("9") and pref.worse.endswith("34"):
             print(f"{pref.better} > {pref.worse} - Cycle")
         else: print(f"{pref.better} > {pref.worse}")
     
@@ -229,7 +229,7 @@ def main():
     print(f"\nSolution status: {LpStatus[problem.status]}")
     
     if LpStatus[problem.status] == "Optimal":
-        objective_value = np.sum([value(alternative_utilities[pref.better]) - value(alternative_utilities[pref.worse]) for pref in preferences])
+        objective_value = np.sum([value(alternative_utilities[pref.better]) - value(alternative_utilities[pref.worse]) for pref in consistent_preferences])
         print(f"\nObjective function value: {objective_value:.4f}")
         
         print_problem_details(problem, criteria_variables, criteria, alternative_utilities)

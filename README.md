@@ -50,22 +50,32 @@ For our car selection problem, we implemented the UTA method to analyze the mult
 - Implementing a discriminant value function that maximizes the distance between utilities of alternatives in preference relationships
 
 ### 2.2 Preference Structure
+Looking at the cars, the Audi A3 stands out as particularly problematic. Despite having the largest engine and most power, it's from 2000 with a staggering 374,000 km on the odometer - more than double most other options. The Kia Picanto (2018, 56,213 km) and Fiat 500 (2012, 93,000 km) are much newer with far less wear.
+
+The Mitsubishi Space Star seems to be the best overall option:
+- Price: 26,000 PLN
+- Year: 2017
+- Mileage: 82,000 km
+- Engine: 1,193 cm³
+- Power: 80 HP
+
+It hits a sweet spot with reasonable price, recent year, manageable mileage, and decent performance - perfect for a student who needs reliability without breaking the bank.
 
 We defined the following preference relations to guide our model:
-- Alternative_0 > Alternative_1 (Renault Clio > Renault Megane)
-- Alternative_1 > Alternative_2 (Renault Megane > Dacia Sandero)
-- Alternative_2 > Alternative_3 (Dacia Sandero > Mitsubishi Space Star)
-- Alternative_3 > Alternative_4 (Mitsubishi Space Star > Nissan Micra)
-- Alternative_4 > Alternative_5 (Nissan Micra > Ford KA)
+- Alternative_8 > Alternative_9 (Kia Picanto > Audi A3)
+- Alternative_7 > Alternative_9 (Fiat 500 > Audi A3)
+- Alternative_31 > Alternative_9 (Mitsubishi Space Star > Audi A3)
+- Alternative_31 > Alternative_8 (Mitsubishi Space Star > Kia Picanto)
+- Alternative_31 > Alternative_7 (Mitsubishi Space Star > Fiat 500)
 
 We also introduced an inconsistent preference:
-- Alternative_2 > Alternative_0 (Dacia Sandero > Renault Clio)
+- Alternative_9 > Alternative_31 (Audi A3 > Mitsubishi Space Star)
 
-This creates a cycle (Renault Clio > Renault Megane > Dacia Sandero > Renault Clio), which our solver had to find. And it found and removed the contradictory preference (Dacia Sandero > Renault Clio) to fix the cycle in our preference statements.
+This creates a cycle (Mitsubishi > Kia Picanto > Audi A3 > Mitsubishi), which our solver had to find. And it found and removed the contradictory preference (Audi A3 > Mitsubishi Space Star) to fix the cycle in our preference statements.
 
 ### 2.3 Results Analysis
 
-![Utility Functions](utility_functions.png)
+![Marginal Value Functions](marginal_value_functions.png)
 
 #### Objective Function
 We implemented an objective function that maximizes the sum of utility differences between alternatives in preference relationships:
@@ -74,18 +84,18 @@ We implemented an objective function that maximizes the sum of utility differenc
 Maximize: Σ (U(a) - U(b)) for all preference relations a > b
 ```
 
-This approach finds the most discriminant value function by ensuring that preferred alternatives have significantly higher utility values than less preferred ones. Our objective function successfully maximized the discrimination between alternatives in preference relationships:
+This approach finds the most discriminant value function by ensuring that preferred alternatives have significantly higher utility values than less preferred ones. Our objective function value was 1.5000, showing that our model successfully maximized the discrimination between alternatives in preference relationships:
 
 1. **Clear Utility Separation**: Looking at our consistent preference relations:
-   - Alternative_0 > Alternative_1: Utilities 0.79 > 0.70 (difference: 0.09)
-   - Alternative_1 > Alternative_2: Utilities 0.70 > 0.69 (difference: 0.01)
-   - Alternative_2 > Alternative_3: Utilities 0.69 > 0.50 (difference: 0.19)
-   - Alternative_3 > Alternative_4: Utilities 0.50 > 0.31 (difference: 0.19)
-   - Alternative_4 > Alternative_5: Utilities 0.31 > 0.30 (difference: 0.01)
+   - Alternative_8 > Alternative_9: Utilities 0.31 > 0.30 (difference: 0.01)
+   - Alternative_7 > Alternative_9: Utilities 0.40 > 0.30 (difference: 0.10)
+   - Alternative_31 > Alternative_9: Utilities 0.80 > 0.30 (difference: 0.50)
+   - Alternative_31 > Alternative_8: Utilities 0.80 > 0.31 (difference: 0.49)
+   - Alternative_31 > Alternative_7: Utilities 0.80 > 0.40 (difference: 0.40)
 
-2. **Total Discrimination**: The sum of these differences (our objective function value) is 0.49, which represents how well our model discriminates between alternatives in preference relationships.
+2. **Total Discrimination**: The sum of these differences (our objective function value) is 1.50, which represents how well our model discriminates between alternatives in preference relationships.
 
-3. **Distinct Utility Clusters**: The utility values show clear groupings (0.79, 0.70-0.69, 0.61-0.59, 0.50-0.49, 0.40-0.39, 0.31-0.30), indicating that the model separates alternatives into tiers.
+3. **Distinct Utility Clusters**: The utility values show clear groupings (0.80, 0.60, 0.50, 0.40, 0.30-0.31, 0.20, 0.10), indicating that the model separates alternatives into distinct tiers.
 
 #### Criteria Weights
 Our model gave equal weight to all criteria:
@@ -98,19 +108,47 @@ Our model gave equal weight to all criteria:
 This happened because of our artificial alternatives that prevent any single criterion from becoming too important. Based on our preference statements, the model couldn't find a reason to make one criterion more important than others. 
 
 #### Car Rankings
-Our model successfully found a solution after removing the inconsistent preference, showing that our approach was reasonable. Both of the Renault Clio models stand out as the clear winners with a utility score of 0.79, which is significantly higher than the other cars.
-Top 10 cars according to our model:
-1. Renault Clio 0.9 Energy TCe Limited (0.79)
-2. Renault Clio (Energy) TCe 90 Start & Stop LIMITED (0.79)
-3. BMW Seria 1 118i (0.70)
-4. Renault Megane 1.4 RN 16V (0.70)
-5. Volkswagen Polo 1.2 TSI BMT Highline (0.69)
-6. Dacia Sandero Stepway TCe 90 (S&S) Essential (0.69)
-7. Audi A1 1.4 TFSI Sportback S tronic Ambition (0.69)
-8. Suzuki Swift 1.0 T Elegance (0.69)
-9. Opel Corsa (0.69)
-10. Mitsubishi Space Star 1.2 Clear Tec CVT Active+ (0.61)
+Our model successfully found a solution after removing the inconsistent preference, showing that our approach was reasonable. The Mitsubishi Space Star stands out as the clear winner with a utility score of 0.80, which is significantly higher than the other cars.
 
-The scores range from 0.30 to 0.79, giving us a good way to tell the cars apart.
+Top 10 cars according to our model:
+1. Mitsubishi Space Star 1.2 Clear Tec CVT Active+ (0.80)
+2. Peugeot 208 PureTech 75 Allure (0.60)
+3. BMW Seria 1 118i (0.50)
+4. Citroën C3 1.2 VTi Attraction (0.50)
+5. Fiat 500 1.2 8V Start&Stopp Collezione (0.50)
+6. Peugeot 208 1.2 PureTech Style (0.40)
+7. Audi A1 1.4 TFSI Sportback S tronic Ambition (0.40)
+8. Volkswagen Polo 1.2 TSI BMT Highline (0.40)
+9. Suzuki Swift 1.0 T Elegance (0.40)
+10. Kia Rio (0.40)
+
+The scores range from 0.10 to 0.80, giving us a good way to tell the cars apart.
 
 The UTA method was effective in analyzing this complex car selection problem by handling the preference inconsistency and giving us a clear ranking of all alternatives.
+
+## 3. Comparison Between UTA and PROMETHEE Methods
+
+In our previous project, we analyzed the same car selection problem using the PROMETHEE method. Here's how the results compare:
+
+### 3.1 Results Comparison
+
+Both methods identified the Mitsubishi Space Star as the top choice:
+
+| Car Model | UTA Rank | PROMETHEE Rank |
+|-----------|----------|----------------|
+| Mitsubishi Space Star | 1 | 1 |
+| Fiat 500 | 5 | 4 |
+| Dacia Sandero | 6 | 2 |
+| Renault Clio | 8 | 3 |
+| Kia Picanto | 10 | 5 |
+| Audi A3 | 16 | 10 |
+
+### 3.2 Key Insights
+
+1. **Consistency at Extremes**: Both methods ranked Mitsubishi Space Star at the top and Audi A3 at the bottom, confirming these as the best and worst options respectively.
+
+2. **Different Middle Rankings**: The methods differed in middle alternatives with Dacia Sandero ranked 6th in UTA but 2nd in PROMETHEE, and Renault Clio ranked 8th in UTA but 3rd in PROMETHEE.
+
+3. **Weight Determination**: UTA determined equal weights (0.2) for all criteria based on our preference statements, while PROMETHEE used our manually assigned weights (Mileage: 3, Price/Year: 2, Engine/Power: 1).
+
+4. **Confidence in Top Choice**: Both methods converging on the Mitsubishi Space Star as the best option gives us high confidence in this recommendation for our student car buyer.
