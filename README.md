@@ -153,11 +153,121 @@ Both methods identified the Mitsubishi Space Star as the top choice:
 
 4. **Confidence in Top Choice**: Both methods converging on the Mitsubishi Space Star as the best option gives us high confidence in this recommendation for our student car buyer.
 
+## 4. AHP Method Implementation and Results
 
+### 4.1 Implementation Overview
 
+For our car selection problem, we also implemented the Analytic Hierarchy Process (AHP) method to provide another perspective. Our implementation includes:
+
+- Creating a three-level hierarchy with the goal (car selection) at the top level
+- Defining three main categories at the second level: Cost, Performance, and Reliability
+- Placing five criteria at the third level, distributed across the categories:
+  - Cost: Price
+  - Performance: Engine Size, Power
+  - Reliability: Year, Mileage
+- Using the eigenvector method to calculate weights and consistency ratios
+- Implementing consistency checks for all pairwise comparison matrices
+- Analyzing inconsistencies by reconstructing matrices from calculated weights
+
+### 4.2 Pairwise Comparison Matrices
+
+We created pairwise comparison matrices for each level of the hierarchy using the standard 1-9 scale:
+
+**Level 1: Categories**
+```
+             Reliability      Cost  Performance
+Reliability     1.000000  3.000000     5.000000
+Cost            0.333333  1.000000     3.000000
+Performance     0.250000  0.333333     1.000000
+```
+
+This matrix was intentionally made inconsistent (Performance vs. Reliability should be 1/5, but we used 1/4). The consistency ratio was 0.1174, which exceeds the acceptable threshold of 0.1.
+
+**Level 2: Performance Criteria**
+```
+             Engine Size     Power
+Engine Size     1.000000  0.333333
+Power           3.000000  1.000000
+```
+
+**Level 2: Reliability Criteria**
+```
+          Mileage  Year
+Mileage  1.000000   3.000000
+Year     0.333333   1.000000
+```
+
+Both Level 2 matrices were perfectly consistent with a consistency ratio of 0.0000.
+
+### 4.3 Inconsistency Analysis
+
+![AHP Inconsistency](consistency_ratios.png)
+
+For the inconsistent Level 1 matrix, we reconstructed it from the calculated weights:
+
+```
+             Reliability      Cost  Performance
+Reliability     1.000000  2.437196     5.523185
+Cost            0.410308  1.000000     2.266205
+Performance     0.181055  0.441266     1.000000
+```
+
+The difference matrix (Original - Reconstructed) revealed:
+```
+             Reliability      Cost  Performance
+Reliability     0.000000  0.562804    -0.523185
+Cost           -0.076974  0.000000     0.733795
+Performance     0.068945 -0.107933     0.000000
+```
+
+The largest inconsistency was 0.7338 at the position "Cost vs. Performance", confirming that our intentional inconsistency was detected.
+
+### 4.4 Weights and Results
+
+The AHP method produced the following weights for our criteria:
+
+| Category | Local Weight | Criterion | Local Weight | Global Weight |
+|----------|--------------|-----------|--------------|---------------|
+| Reliability | 0.6284 | Mileage | 0.7500 | 0.4713 |
+| Reliability | 0.6284 | Year | 0.2500 | 0.1571 |
+| Cost | 0.2578 | Price | 1.0000 | 0.2578 |
+| Performance | 0.1138 | Power | 0.7500 | 0.0853 |
+| Performance | 0.1138 | Engine Size | 0.2500 | 0.0284 |
+
+![AHP Hierarchy](ahp_hierarchy.png)
+![AHP Weights](ahp_weights.png)
+
+These weights show that Mileage was considered the most important criterion (47.13%), followed by Price (25.78%) and Year (15.71%), with Power (8.53%) and Engine Size (2.84%) being less important.
+
+The top 10 cars according to AHP were:
+1. Mitsubishi Space Star 1.2 Clear Tec CVT Active+ (0.786)
+2. Kia Picanto (0.782)
+3. Peugeot 208 PureTech 75 Allure (0.777)
+4. Nissan Micra 1.2 City (0.765)
+5. Peugeot 206 plus 206+ 60 Generation (0.761)
+6. Chevrolet Spark 1.0 Base (0.745)
+7. BMW Seria 1 118i (0.729)
+8. Fiat 500 1.2 8V Anniversario (0.725)
+9. Kia Rio (0.703)
+10. Renault Megane 1.4 RN 16V (0.696)
+
+### 4.5 Comparison with UTA and PROMETHEE Results
+
+The AHP method confirmed the Mitsubishi Space Star as the top choice, aligning with both UTA and PROMETHEE methods. However, there were significant differences in the rankings of other cars:
+
+- Kia Picanto ranked 2nd in AHP, but 10th in UTA and 5th in PROMETHEE
+- Peugeot 208 ranked 3rd in AHP, but 2nd in UTA
+- Dacia Sandero ranked 38th in AHP, but 6th in UTA and 2nd in PROMETHEE
+
+These differences can be attributed to the different weighting schemes:
+- AHP heavily weighted Mileage (47.13%) and Price (25.78%)
+- UTA assigned equal weights (20%) to all criteria
+- PROMETHEE used manually assigned weights with emphasis on Mileage
+
+The AHP results demonstrate how the hierarchical structure and pairwise comparisons can lead to significantly different priorities compared to other MCDA methods, even when applied to the same dataset.
 
 # Appendix A
-## program output
+## UTA output
 
 ```
 Preferences:
@@ -769,4 +879,110 @@ Alternative Rankings:
 47    48                         Fiat Panda 1.1 Active Plus     0.20  Alternative_44
 48    49               Mitsubishi Colt 1.1 ClearTec Edition     0.20  Alternative_26
 49    50                                       Toyota Yaris     0.10  Alternative_47
+```
+
+# Appendix B
+## AHP Output
+```
+             Reliability      Cost  Performance
+Reliability     1.000000  3.000000          5.0
+Cost            0.333333  1.000000          3.0
+Performance     0.250000  0.333333          1.0
+
+category weights: ['0.6284', '0.2578', '0.1138']
+consistency ratio: 0.1174 (inconsistent!)
+
+reconstructed
+             Reliability      Cost  Performance
+Reliability     1.000000  2.437196     5.523185
+Cost            0.410308  1.000000     2.266205
+Performance     0.181055  0.441266     1.000000
+
+difference
+             Reliability      Cost  Performance
+Reliability     0.000000  0.562804    -0.523185
+Cost           -0.076974  0.000000     0.733795
+Performance     0.068945 -0.107933     0.000000
+
+largest difference: 0.7338 at position Cost vs Performance
+---
+
+performance criteria
+             Engine Size     Power
+Engine Size          1.0  0.333333
+Power                3.0  1.000000
+
+performance criteria weights: ['0.2500', '0.7500']
+consistency ratio: 0.0000 (consistent)
+---
+
+reliability criteria
+          Mileage  Year
+Mileage  1.000000   3.0
+Year     0.333333   1.0
+
+reliability criteria weights: ['0.7500', '0.2500']
+consistency ratio: 0.0000 (consistent)
+---
+Price: 0.2578
+Engine Size: 0.0284
+Power: 0.0853
+Mileage: 0.4713
+Year: 0.1571
+
+alternative Evaluation
+----------------
+    Rank                                                Car     Score
+0      1    Mitsubishi Space Star 1.2 Clear Tec CVT Active+  0.786072
+1      2                                        Kia Picanto  0.782069
+2      3                     Peugeot 208 PureTech 75 Allure  0.777165
+3      4                              Nissan Micra 1.2 City  0.764807
+4      5                Peugeot 206 plus 206+ 60 Generation  0.760613
+5      6                           Chevrolet Spark 1.0 Base  0.744914
+6      7                                   BMW Seria 1 118i  0.729143
+7      8                       Fiat 500 1.2 8V Anniversario  0.725468
+8      9                                            Kia Rio  0.702719
+9     10                          Renault Megane 1.4 RN 16V  0.696382
+10    11                     Volkswagen up! 1.0 Black Style  0.695548
+11    12             Fiat 500 1.2 8V Start&Stopp Collezione  0.686680
+12    13                                     Renault Twingo  0.685740
+13    14                                     Renault Twingo  0.676993
+14    15                     Peugeot 208 1.2 PureTech Style  0.672051
+15    16                            Toyota Yaris 1.0 Active  0.666373
+16    17                              Mitsubishi Space Star  0.665424
+17    18                           Suzuki Swift 1.3 Comfort  0.662999
+18    19               Volkswagen Polo 1.2 TSI BMT Highline  0.661662
+19    20                         Fiat Panda 1.1 Active Plus  0.661169
+20    21  Renault Clio (Energy) TCe 90 Start & Stop LIMITED  0.658970
+21    22                          Toyota Yaris 1.0 Luna A/C  0.647252
+22    23                      Citroën C3 1.2 VTi Attraction  0.643477
+23    24                                       Toyota Yaris  0.642423
+24    25                                     Renault Twingo  0.639841
+25    26          Renault Clio (Energy) TCe 90 Bose Edition  0.635085
+26    27               Mitsubishi Colt 1.1 ClearTec Edition  0.632874
+27    28                                            Ford KA  0.631470
+28    29              Fiat 500 C 0.9 8V TwinAir Start&Stopp  0.630229
+29    30                                        Kia Picanto  0.619146
+30    31         Audi A3 2.0 TFSI Quattro Ambition S tronic  0.618279
+31    32                       Citroën C1 1.0 VTi Shine EU6  0.615726
+32    33                                       Nissan Micra  0.606163
+33    34                Renault Clio 0.9 Energy TCe Limited  0.605738
+34    35                                        Ford Fiesta  0.605508
+35    36        Volkswagen up! (BlueMotion Technology) move  0.604093
+36    37       Audi A1 1.4 TFSI Sportback S tronic Ambition  0.603806
+37    38       Dacia Sandero Stepway TCe 90 (S&S) Essential  0.599488
+38    39            Alfa Romeo Mito 0.9 TwinAir Progression  0.591136
+39    40                                    Volkswagen Golf  0.585249
+40    41                        Suzuki Swift 1.0 T Elegance  0.574364
+41    42                    Peugeot 208 1.2 PureTech Active  0.567927
+42    43                             Skoda Fabia 1.0 Active  0.565875
+43    44                               Opel Corsa 1.4 Cosmo  0.563319
+44    45  Volkswagen Polo 1.2 TSI Blue Motion Technology...  0.548585
+45    46                          Ford Fiesta 1.1 Connected  0.546750
+46    47                                         Opel Corsa  0.542788
+47    48       Renault Captur 1.2 Energy TCe Intens EDC EU6  0.541444
+48    49                                            Audi A3  0.501520
+49    50                                            Audi A3  0.361544
+
+visualizations saved as 'ahp_weights.png' and 'consistency_ratios.png'
 ```
