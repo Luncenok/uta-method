@@ -75,7 +75,7 @@ This creates a cycle (Mitsubishi > Kia Picanto > Audi A3 > Mitsubishi), which ou
 
 ### 2.3 Results Analysis
 
-![Marginal Value Functions](marginal_value_functions.png)
+![Marginal Value Functions](images/marginal_value_functions.png)
 
 #### Objective Function
 We implemented an objective function that maximizes the sum of utility differences between alternatives in preference relationships:
@@ -201,7 +201,7 @@ Both Level 2 matrices were perfectly consistent with a consistency ratio of 0.00
 
 ### 4.3 Inconsistency Analysis
 
-![AHP Inconsistency](consistency_ratios.png)
+![AHP Inconsistency](images/consistency_ratios.png)
 
 For the inconsistent Level 1 matrix, we reconstructed it from the calculated weights:
 
@@ -234,8 +234,8 @@ The AHP method produced the following weights for our criteria:
 | Performance | 0.1138 | Power | 0.7500 | 0.0853 |
 | Performance | 0.1138 | Engine Size | 0.2500 | 0.0284 |
 
-![AHP Hierarchy](ahp_hierarchy.png)
-![AHP Weights](ahp_weights.png)
+![AHP Hierarchy](images/ahp_hierarchy.png)
+![AHP Weights](images/ahp_weights.png)
 
 These weights show that Mileage was considered the most important criterion (47.13%), followed by Price (25.78%) and Year (15.71%), with Power (8.53%) and Engine Size (2.84%) being less important.
 
