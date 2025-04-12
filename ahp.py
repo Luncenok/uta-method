@@ -32,7 +32,7 @@ def main() -> None:
     print(pd.DataFrame(category_matrix, index=category_criteria, columns=category_criteria))
     category_weights, category_cr = calculate_weights(category_matrix)
     print(f"\ncategory weights: {[f'{w:.4f}' for w in category_weights]}")
-    print(f"consistency ratio: {category_cr:.4f} ({'consistent' if category_cr < 0.1 else 'inconsistent!'})")
+    print(f"consistency ratio: {category_cr:.4f} ({'consistent' if category_cr < 0.1 else 'inconsistent'})")
 
     if category_cr >= 0.1:
         reconstructed = np.array([category_weights[i] / category_weights[j] for i in range(len(category_weights)) for j in range(len(category_weights))]).reshape(3, 3)
@@ -54,7 +54,7 @@ def main() -> None:
     print(f"\nperformance criteria\n{pd.DataFrame(performance_matrix, index=["Engine Size", "Power"], columns=["Engine Size", "Power"])}")
     performance_weights, performance_cr = calculate_weights(performance_matrix)
     print(f"\nperformance criteria weights: {[f'{w:.4f}' for w in performance_weights]}")
-    print(f"consistency ratio: {performance_cr:.4f} ({'consistent' if performance_cr < 0.1 else 'inconsistent!'})\n---")
+    print(f"consistency ratio: {performance_cr:.4f} ({'consistent' if performance_cr < 0.1 else 'inconsistent'})\n---")
     
     # reliability
     # ["Mileage", "Year"]
@@ -65,7 +65,7 @@ def main() -> None:
     print(f"\nreliability criteria\n{pd.DataFrame(reliability_matrix, index=["Mileage", "Year"], columns=["Mileage", "Year"])}")
     reliability_weights, reliability_cr = calculate_weights(reliability_matrix)
     print(f"\nreliability criteria weights: {[f'{w:.4f}' for w in reliability_weights]}")
-    print(f"consistency ratio: {reliability_cr:.4f} ({'consistent' if reliability_cr < 0.1 else 'inconsistent!'})\n---")
+    print(f"consistency ratio: {reliability_cr:.4f} ({'consistent' if reliability_cr < 0.1 else 'inconsistent'})\n---")
     
     global_weights: Dict[str, float] = {
         "Price": category_weights[1] * 1.0,  # cost category has only price criterion
@@ -78,7 +78,7 @@ def main() -> None:
     for criterion, weight in global_weights.items():
         print(f"{criterion}: {weight:.4f}")
     
-    print("\nalternative Evaluation")
+    print("\nalternative evaluation")
     print("----------------")
     
     # normalize

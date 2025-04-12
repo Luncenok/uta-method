@@ -41,7 +41,7 @@ def add_monotonicity_constraints(problem: LpProblem, criteria: Criteria, criteri
                 problem += criterion_vars[criterion.values[i]] >= criterion_vars[criterion.values[i + 1]], f"Monotonicity_{criterion.name}_{i}"
 
 def add_normalization_constraints(problem: LpProblem, criteria: Criteria, criteria_variables: CriteriaVariables):
-    best_values_sum = [] # int(criterion.is_gain)-1 is the proof of not using ai. criterion.values are sorted
+    best_values_sum = []
     for criterion in criteria:
         criterion_vars = criteria_variables[criterion.name]
         # if criterion.is_gain: best_value = criterion.values[-1] else: best_value = criterion.values[0]
